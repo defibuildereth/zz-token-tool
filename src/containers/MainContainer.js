@@ -179,7 +179,6 @@ const MainContainer = () => {
     ]
 
     useEffect(() => {
-        console.log(process.env.REACT_APP_ETHERSCAN)
         getAllBalances(addressList)
             .then(r => console.log(r))
     }, [])
@@ -194,26 +193,30 @@ const MainContainer = () => {
         return ({ zkSync: zkSyncBalance })
     }
 
-    // getMainnetERC20Balance(address, activeTokensDetails[i].address)
 
     const getMainnetBalance = async function (address) {
         let mainnetBalance;
 
-        let erc20TokenBalancePromiseArray =[]
+        let erc20TokenBalancePromiseArray = []
 
-        for (let i = 0; i < activeTokensDetails.length; i++) {
-                // const res = await etherscanAPI.schedule(() => getMainnetERC20Balance(address, activeTokensDetails[i].address))
-                erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, activeTokensDetails[i].address))
+        for (let i = 0; i < 2; i++) {
+            let values = Object.values(activeTokensDetails[i])
+            // console.log(values[0].address)
+            erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, values[0].address)) 
         }
 
         await Promise.all(erc20TokenBalancePromiseArray)
-        .then((values) => {
-            console.log('here', values)
-        })
+            .then((values) => {
+                console.log('here', values)
+            })
     }
 
     const getMainnetERC20Balance = async function (address, tokenContract) {
-        await fetch(``)
+        await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
+        .then(r => r.json())
+        .then(res => {
+            console.log(res)
+        })
 
     }
 
@@ -222,8 +225,8 @@ const MainContainer = () => {
 
         let addressBalancePromiseArray = []
 
-        addressBalancePromiseArray.push(getZkSyncBalance(address))
-        // addressBalancePromiseArray.push(getMainnetBalance(address))
+        // addressBalancePromiseArray.push(getZkSyncBalance(address))
+        addressBalancePromiseArray.push(getMainnetBalance(address))
 
         await Promise.all(addressBalancePromiseArray)
             .then((values) => {
