@@ -199,36 +199,39 @@ const MainContainer = () => {
         return ({ zkSync: zkSyncBalance })
     }
 
-
     const getMainnetBalance = async function (address) {
         let mainnetBalance = []
 
-        let erc20TokenBalancePromiseArray = []
-        // console.log(activeTokensDetails.length)
+        etherscanAPI.schedule(() => {
+            getMainnetEthBalance(address)
+                .then((result) => {
+                    mainnetBalance.push(result)
+                })
+        })
 
         for (let i = 0; i < activeTokensDetails.length; i++) {
             let values = Object.values(activeTokensDetails[i])
-            // console.log(values[0].address)
-            etherscanAPI.schedule(() => {
-                getMainnetERC20Balance(address, values[0].address, values[0].symbol)
-                    .then((result) => {
-                        mainnetBalance.push(result)
-                    })
-            })
-            // erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, values[0].address))
+            if (values[0].symbol !== 'ETH') {
+                etherscanAPI.schedule(() => {
+                    getMainnetERC20Balance(address, values[0].address, values[0].symbol)
+                        .then((result) => {
+                            mainnetBalance.push(result)
+                        })
+                })
+            }
         }
 
-        // limiter.schedule(() => myFunction(arg1, arg2))
-        //     .then((result) => {
-        //         /* handle result */
-        //     });
-
-        // await Promise.all(erc20TokenBalancePromiseArray)
-        //     .then((values) => {
-        //         mainnetBalance = values
-        //     })
-
         return { mainNet: mainnetBalance }
+    }
+
+    const getMainnetEthBalance = async function (address) {
+        let result;
+        await fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
+            .then(r => r.json())
+            .then(res => {
+                result = { token: 'ETH', balance: res.result }
+            })
+        return result
     }
 
     const getMainnetERC20Balance = async function (address, tokenContract, symbol) {
