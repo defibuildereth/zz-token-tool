@@ -207,17 +207,20 @@ const MainContainer = () => {
 
         await Promise.all(erc20TokenBalancePromiseArray)
             .then((values) => {
-                console.log('here', values)
+                mainnetBalance = values
             })
+
+        return mainnetBalance
     }
 
     const getMainnetERC20Balance = async function (address, tokenContract) {
+        let result;
         await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
         .then(r => r.json())
         .then(res => {
-            console.log(res)
+            result = res.result
         })
-
+        return result
     }
 
     const getAddressBalances = async function (address) {
@@ -225,7 +228,7 @@ const MainContainer = () => {
 
         let addressBalancePromiseArray = []
 
-        // addressBalancePromiseArray.push(getZkSyncBalance(address))
+        addressBalancePromiseArray.push(getZkSyncBalance(address))
         addressBalancePromiseArray.push(getMainnetBalance(address))
 
         await Promise.all(addressBalancePromiseArray)
@@ -239,19 +242,15 @@ const MainContainer = () => {
 
     const getAllBalances = async function (list) {
         let allBalances;
-
         let allAddressesBalancesPromiseArray = []
-
         for (let i = 0; i < list.length; i++) {
             allAddressesBalancesPromiseArray.push(getAddressBalances(list[i]))
         }
-
         await Promise.all(allAddressesBalancesPromiseArray)
             .then((values) => {
                 allBalances = values
             }
             )
-
         return allBalances;
     }
 
