@@ -5,7 +5,7 @@ const MainContainer = () => {
 
     const etherscanAPI = new Bottleneck({
         maxConcurrent: 1,
-        minTime: 250
+        minTime: 400
     });
 
     const addressList = [
@@ -188,7 +188,13 @@ const MainContainer = () => {
         await fetch(`https://api.zksync.io/api/v0.2/accounts/${address}`)
             .then((res) => res.json())
             .then(data => {
-                zkSyncBalance = data.result.committed.balances
+                let tokensObject = []
+                let keys = Object.keys(data.result.committed.balances)
+                let values = Object.values(data.result.committed.balances)
+                for (let i = 0; i < keys.length; i++) {
+                    tokensObject.push({ token: keys[i], balance: values[i] })
+                }
+                zkSyncBalance = tokensObject
             })
         return ({ zkSync: zkSyncBalance })
     }
@@ -205,9 +211,9 @@ const MainContainer = () => {
             // console.log(values[0].address)
             etherscanAPI.schedule(() => {
                 getMainnetERC20Balance(address, values[0].address, values[0].symbol)
-                .then((result) => {
-                    mainnetBalance.push(result)
-                })
+                    .then((result) => {
+                        mainnetBalance.push(result)
+                    })
             })
             // erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, values[0].address))
         }
@@ -222,7 +228,7 @@ const MainContainer = () => {
         //         mainnetBalance = values
         //     })
 
-        return {mainNet: mainnetBalance}
+        return { mainNet: mainnetBalance }
     }
 
     const getMainnetERC20Balance = async function (address, tokenContract, symbol) {
@@ -230,7 +236,7 @@ const MainContainer = () => {
         await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
             .then(r => r.json())
             .then(res => {
-                result = {token: symbol, balance: res.result}
+                result = { token: symbol, balance: res.result }
             })
         return result
     }
