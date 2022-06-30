@@ -5,12 +5,12 @@ const MainContainer = () => {
 
     const etherscanAPI = new Bottleneck({
         maxConcurrent: 1,
-        minTime: 333
+        minTime: 250
     });
 
     const addressList = [
         '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
-        // '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
+        '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
     ]
 
     const activeTokensDetails = [
@@ -195,31 +195,43 @@ const MainContainer = () => {
 
 
     const getMainnetBalance = async function (address) {
-        let mainnetBalance;
+        let mainnetBalance = []
 
         let erc20TokenBalancePromiseArray = []
+        // console.log(activeTokensDetails.length)
 
-        for (let i = 0; i < 2; i++) {
+        for (let i = 0; i < activeTokensDetails.length; i++) {
             let values = Object.values(activeTokensDetails[i])
             // console.log(values[0].address)
-            erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, values[0].address)) 
+            etherscanAPI.schedule(() => {
+                getMainnetERC20Balance(address, values[0].address, values[0].symbol)
+                .then((result) => {
+                    mainnetBalance.push(result)
+                })
+            })
+            // erc20TokenBalancePromiseArray.push(getMainnetERC20Balance(address, values[0].address))
         }
 
-        await Promise.all(erc20TokenBalancePromiseArray)
-            .then((values) => {
-                mainnetBalance = values
-            })
+        // limiter.schedule(() => myFunction(arg1, arg2))
+        //     .then((result) => {
+        //         /* handle result */
+        //     });
 
-        return mainnetBalance
+        // await Promise.all(erc20TokenBalancePromiseArray)
+        //     .then((values) => {
+        //         mainnetBalance = values
+        //     })
+
+        return {mainNet: mainnetBalance}
     }
 
-    const getMainnetERC20Balance = async function (address, tokenContract) {
+    const getMainnetERC20Balance = async function (address, tokenContract, symbol) {
         let result;
         await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
-        .then(r => r.json())
-        .then(res => {
-            result = res.result
-        })
+            .then(r => r.json())
+            .then(res => {
+                result = {token: symbol, balance: res.result}
+            })
         return result
     }
 
