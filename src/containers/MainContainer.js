@@ -8,12 +8,19 @@ const MainContainer = () => {
         minTime: 400
     });
 
+    const arbiscanAPI = new Bottleneck({
+        maxConcurrent: 1,
+        minTime: 400
+    })
+
     const addressList = [
         '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
         '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
+        '0xAa214bF592687A451A0753F805aa0fe931Ba6968'
     ]
 
     const tokens = [
+        { "token": "ETH", "address": "0x0000000000000000000000000000000000000000", "decimals": 18 },
         { "token": "APE", "address": "0x4d224452801aced8b2f0aebe155379bb5d594381", "decimals": 18 },
         { "token": "BUSD", "address": "0x4fabb145d64652a948d72533023f6e7a623c7c53", "decimals": 18, "polygon-pos": "0xdab529f40e671a1d4bf91361c21bf9f0c9712ab7" },
         { "token": "LINK", "address": "0x514910771af9ca656af840dff83e8264ecf986ca", "decimals": 18, "polygon-pos": "0x53e0bca35ec356bd5dddfebbd1fc0fd03fabad39", "arbitrum-one": "0xf97f4df75117a78c1a5a0dbb814af92458539fb4" },
@@ -30,7 +37,7 @@ const MainContainer = () => {
         { "token": "WETH", "address": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2", "decimals": 18, "polygon-pos": "0x7ceb23fd6bc0add59e62ac25578270cff1b9f619", "arbitrum-one": "0x82af49447d8a07e3bd95bd0d56f35241523fbab1" },
         { "token": "WBTC", "address": "0x2260fac5e5542a773aa44fbcfedf7c193bc2c599", "decimals": 8, "polygon-pos": "0x1bfd67037b42cf73acf2047067bd4f2c47d9bfd6", "arbitrum-one": "0x2f2a2543b76a4166549f7aab2e75bef0aefc5b0f" },
         { "token": "ZZ", "address": "0xc91a71a1ffa3d8b22ba615ba1b9c01b2bbbf55ad", "decimals": 18 },
-        ]
+    ]
 
     useEffect(() => {
         getAllBalances(addressList)
@@ -51,6 +58,51 @@ const MainContainer = () => {
                 zkSyncBalance = tokensObject
             })
         return ({ zkSync: zkSyncBalance })
+    }
+
+    const getArbitrumBalance = async function (address) {
+        let arbitrumBalance = []
+
+        arbiscanAPI.schedule(() => {
+            getArbitrumEthBalance(address)
+                .then((result) => {
+                    arbitrumBalance.push(result)
+                })
+        })
+
+        for (let i = 0; i < tokens.length; i++) {
+            if (tokens[i]["arbitrum-one"]) {
+                if (tokens[i].token !== 'ETH') {
+                    arbiscanAPI.schedule(() => {
+                        getArbitrumERC20Balance(address, tokens[i]["arbitrum-one"], tokens[i].token)
+                            .then((result) => {
+                                arbitrumBalance.push(result)
+                            })
+                    })
+                }
+            }
+        }
+        return { arbitrum: arbitrumBalance }
+    }
+
+    const getArbitrumEthBalance = async function (address) {
+        let result;
+        await fetch(`https://api.arbiscan.io/api?module=account&action=balance&address=${address}&apikey=${process.env.REACT_APP_ARBISCAN}`)
+            .then(r => r.json())
+            .then(res => {
+                result = { token: 'ETH', balance: res.result }
+            })
+        return result
+    }
+
+    const getArbitrumERC20Balance = async function (address, tokenContract, symbol) {
+        let result;
+        await fetch(`https://api.arbiscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ARBISCAN}`)
+            .then(r => r.json())
+            .then(res => {
+                result = { token: symbol, balance: res.result }
+            })
+        return result
     }
 
     const getMainnetBalance = async function (address) {
@@ -102,8 +154,9 @@ const MainContainer = () => {
 
         let addressBalancePromiseArray = []
 
-        addressBalancePromiseArray.push(getZkSyncBalance(address))
-        addressBalancePromiseArray.push(getMainnetBalance(address))
+        // addressBalancePromiseArray.push(getZkSyncBalance(address))
+        // addressBalancePromiseArray.push(getMainnetBalance(address))
+        addressBalancePromiseArray.push(getArbitrumBalance(address))
 
         await Promise.all(addressBalancePromiseArray)
             .then((values) => {
