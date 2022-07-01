@@ -13,6 +13,11 @@ const MainContainer = () => {
         minTime: 400
     })
 
+    const polygonscanAPI = new Bottleneck({
+        maxConcurrent: 1,
+        minTime: 400
+    })
+
     const addressList = [
         '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
         '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
@@ -43,6 +48,8 @@ const MainContainer = () => {
         getAllBalances(addressList)
             .then(r => console.log(r))
     }, [])
+
+
 
     const getZkSyncBalance = async function (address) {
         let zkSyncBalance;
@@ -97,7 +104,54 @@ const MainContainer = () => {
 
     const getArbitrumERC20Balance = async function (address, tokenContract, symbol) {
         let result;
+        // console.log(`https://api.arbiscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ARBISCAN}`)
         await fetch(`https://api.arbiscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ARBISCAN}`)
+            .then(r => r.json())
+            .then(res => {
+                result = { token: symbol, balance: res.result }
+            })
+        return result
+    }
+
+    const getPolygonBalance = async function (address) {
+        let polygonBalance = []
+
+        polygonscanAPI.schedule(() => {
+            getPolygonMaticBalance(address)
+                .then((result) => {
+                    polygonBalance.push(result)
+                })
+        })
+
+        for (let i = 0; i < tokens.length; i++) {
+            if (tokens[i]["polygon-pos"]) {
+                if (tokens[i].token !== 'MATIC') {
+                    polygonscanAPI.schedule(() => {
+                        getPolygonERC20Balance(address, tokens[i]["polygon-pos"], tokens[i].token)
+                            .then(result => {
+                                polygonBalance.push(result)
+                            })
+                    })
+                }
+            }
+        }
+        return { polygon: polygonBalance }
+
+    }
+
+    const getPolygonMaticBalance = async function (address) {
+        let result;
+        await fetch(`https://api.polygonscan.com/api?module=account&action=balance&address=${address}&apikey=${process.env.REACT_APP_POLYGONSCAN}`)
+            .then(r => r.json())
+            .then(res => {
+                result = { token: 'MATIC', balance: res.result }
+            })
+        return result
+    }
+
+    const getPolygonERC20Balance = async function (address, tokenContract, symbol) {
+        let result;
+        await fetch(`https://api.polygonscan.com/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_POLYGONSCAN}`)
             .then(r => r.json())
             .then(res => {
                 result = { token: symbol, balance: res.result }
@@ -141,6 +195,7 @@ const MainContainer = () => {
 
     const getMainnetERC20Balance = async function (address, tokenContract, symbol) {
         let result;
+        // console.log(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
         await fetch(`https://api.etherscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ETHERSCAN}`)
             .then(r => r.json())
             .then(res => {
@@ -150,13 +205,16 @@ const MainContainer = () => {
     }
 
     const getAddressBalances = async function (address) {
+
         let addressBalance;
 
         let addressBalancePromiseArray = []
 
-        // addressBalancePromiseArray.push(getZkSyncBalance(address))
-        // addressBalancePromiseArray.push(getMainnetBalance(address))
+        addressBalancePromiseArray.push(getZkSyncBalance(address))
+        addressBalancePromiseArray.push(getMainnetBalance(address))
         addressBalancePromiseArray.push(getArbitrumBalance(address))
+        addressBalancePromiseArray.push(getPolygonBalance(address))
+
 
         await Promise.all(addressBalancePromiseArray)
             .then((values) => {
