@@ -1,12 +1,11 @@
 import './App.css';
-import MainContainer from './containers/MainContainer';
-
+import BalanceContainer from './containers/BalanceContainer';
 
 function App() {
   return (
     <>
       <h1>ZigZag Token Balances Dashboard</h1>
-      <MainContainer></MainContainer>
+      <BalanceContainer></BalanceContainer>
     </>
   );
 }
