@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import Bottleneck from "bottleneck";
+import BalancesTable from '../components/BalancesTable';
 
 
 const BalanceContainer = () => {
 
     const etherscanAPI = new Bottleneck({
         maxConcurrent: 1,
-        minTime: 400
+        minTime: 250
     });
 
     const arbiscanAPI = new Bottleneck({
@@ -51,15 +52,38 @@ const BalanceContainer = () => {
     useEffect(() => {
         getAllBalances(addressList)
             .then((r) => {
-                console.log(r)
                 setBalances(r)
             })
         getLoading(addressList, tokens)
             .then((r) => {
-                console.log(r)
                 setLoading(r)
             })
     }, [])
+
+    // const parseBalances = function (obj) {
+    //     let keys = Object.keys(obj)
+    //     let addressItem = (obj[keys[0]][0])
+    //     let address = Object.keys(addressItem)
+    //     // console.log(address[0])
+    //     let item = (addressItem[address[0]])
+    //     for (let i = 0; i < item.length; i++) {
+    //         let network = Object.keys(item[i])
+    //         let balances = Object.values(item[i])
+    //         // console.log(network[0])
+    //         for (let i = 0; i < balances.length; i++) {
+    //             let balanceItems = balances[i]
+    //             // console.log(balanceItems)
+    //             for (let j = 0; j < balanceItems.length; j++) {
+    //                 let balanceItem = balanceItems[j]
+    //                 let balanceItemToken = Object.keys(balanceItem)
+    //                 let balanceItemBalance = Object.values(balanceItem)
+    //                 for (let k = 0; k < balanceItemToken.length; k++) {
+    //                     // console.log(balanceItemToken[k], balanceItemBalance[k])
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 
     async function scheduleEtherscan(url) {
         return etherscanAPI.schedule(() => {
@@ -102,7 +126,7 @@ const BalanceContainer = () => {
 
         const allBalances = await promiseAll(promiseArray)
 
-        console.log('getAllBalances returning: ', allBalances)
+        // console.log('getAllBalances returning: ', allBalances)
 
         return { allBalances }
 
@@ -229,8 +253,10 @@ const BalanceContainer = () => {
         return ({addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length})
     }
 
+
+
     return (<>
-        {balances ? <p>Balances go here</p> :<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 2.5 calls/second, that means a loading time of {loading.total / 2.5}s.</p></>}
+        {balances ? <BalancesTable balances={balances}></BalancesTable>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
     </>)
 }
 
