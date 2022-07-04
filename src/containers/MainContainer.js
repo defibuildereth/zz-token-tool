@@ -44,12 +44,15 @@ const MainContainer = () => {
         { "token": "ZZ", "address": "0xc91a71a1ffa3d8b22ba615ba1b9c01b2bbbf55ad", "decimals": 18 },
     ]
 
+    const [balances, setBalances] = useState("")
+
     useEffect(() => {
         getAllBalances(addressList)
-            .then(r => console.log(r))
+            .then(r => {
+                console.log(r)
+                setBalances(r)
+            })
     }, [])
-
-
 
     const getZkSyncBalance = async function (address) {
         let zkSyncBalance;
@@ -64,6 +67,9 @@ const MainContainer = () => {
                 }
                 zkSyncBalance = tokensObject
             })
+            .catch((err) => {
+                console.log('error', err)
+            })
         return ({ zkSync: zkSyncBalance })
     }
 
@@ -74,6 +80,9 @@ const MainContainer = () => {
             getArbitrumEthBalance(address)
                 .then((result) => {
                     arbitrumBalance.push(result)
+                })
+                .catch((err) => {
+                    console.log('error', err)
                 })
         })
 
@@ -99,16 +108,21 @@ const MainContainer = () => {
             .then(res => {
                 result = { token: 'ETH', balance: res.result }
             })
+            .catch((err) => {
+                console.log('error', err)
+            })
         return result
     }
 
     const getArbitrumERC20Balance = async function (address, tokenContract, symbol) {
         let result;
-        // console.log(`https://api.arbiscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ARBISCAN}`)
         await fetch(`https://api.arbiscan.io/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_ARBISCAN}`)
             .then(r => r.json())
             .then(res => {
                 result = { token: symbol, balance: res.result }
+            })
+            .catch((err) => {
+                console.log('error', err)
             })
         return result
     }
@@ -120,6 +134,9 @@ const MainContainer = () => {
             getPolygonMaticBalance(address)
                 .then((result) => {
                     polygonBalance.push(result)
+                })
+                .catch((err) => {
+                    console.log('error', err)
                 })
         })
 
@@ -146,6 +163,9 @@ const MainContainer = () => {
             .then(res => {
                 result = { token: 'MATIC', balance: res.result }
             })
+            .catch((err) => {
+                console.log('error', err)
+            })
         return result
     }
 
@@ -155,6 +175,9 @@ const MainContainer = () => {
             .then(r => r.json())
             .then(res => {
                 result = { token: symbol, balance: res.result }
+            })
+            .catch((err) => {
+                console.log('error', err)
             })
         return result
     }
@@ -166,6 +189,9 @@ const MainContainer = () => {
             getMainnetEthBalance(address)
                 .then((result) => {
                     mainnetBalance.push(result)
+                })
+                .catch((err) => {
+                    console.log('error', err)
                 })
         })
 
@@ -190,6 +216,9 @@ const MainContainer = () => {
             .then(res => {
                 result = { token: 'ETH', balance: res.result }
             })
+            .catch((err) => {
+                console.log('error', err)
+            })
         return result
     }
 
@@ -200,6 +229,9 @@ const MainContainer = () => {
             .then(r => r.json())
             .then(res => {
                 result = { token: symbol, balance: res.result }
+            })
+            .catch((err) => {
+                console.log('error', err)
             })
         return result
     }
@@ -221,6 +253,9 @@ const MainContainer = () => {
                 addressBalance = values
             }
             )
+            .catch((err) => {
+                console.log('error', err)
+            })
 
         return ({ [address]: addressBalance });
     }
@@ -236,11 +271,31 @@ const MainContainer = () => {
                 allBalances = values
             }
             )
+            .catch((err) => {
+                console.log('error', err)
+            })
         return allBalances;
+
+    }
+
+    const parseBalances = function (array) {
+        const info = array.map((item) => {
+            let addy = Object.keys(item)
+            let v = Object.values(item)
+            let networks = Object.values(v[0])
+            // console.log(networks.length)
+            for (let i = 0; i < networks.length; i++) {
+                let boop = Object.keys(networks[i])
+                // console.log(boop[0])
+                return <><p>{addy}</p><p>{boop[0]}</p></>
+            }
+
+        })
+        return info
     }
 
     return (
-        <>
+        <>{balances ? <section>{parseBalances(balances)}</section> : <p>loading...</p>}
         </>
     )
 }
