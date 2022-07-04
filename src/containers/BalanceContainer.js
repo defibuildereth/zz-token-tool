@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import Bottleneck from "bottleneck";
 
 
@@ -45,10 +45,19 @@ const BalanceContainer = () => {
         { "token": "ZZ", "address": "0xc91a71a1ffa3d8b22ba615ba1b9c01b2bbbf55ad", "decimals": 18 },
     ]
 
+    const [balances, setBalances] = useState("")
+    const [loading, setLoading] = useState("")
+
     useEffect(() => {
         getAllBalances(addressList)
-            .then(() => {
-                boop()
+            .then((r) => {
+                console.log(r)
+                setBalances(r)
+            })
+        getLoading(addressList, tokens)
+            .then((r) => {
+                console.log(r)
+                setLoading(r)
             })
     }, [])
 
@@ -83,10 +92,6 @@ const BalanceContainer = () => {
                 return null;
             })
         }))
-    }
-
-    const boop = function () {
-        console.log('boop')
     }
 
     const getAllBalances = async function (list) {
@@ -220,10 +225,12 @@ const BalanceContainer = () => {
         return ({ zkSync: zkSyncBalance })
     }
 
-
+    const getLoading = async function (addressList, tokens) {
+        return ({addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length})
+    }
 
     return (<>
-        <h2> I Are BalanceContainer</h2>
+        {balances ? <p>Balances go here</p> :<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 2.5 calls/second, that means a loading time of {loading.total / 2.5}s.</p></>}
     </>)
 }
 
