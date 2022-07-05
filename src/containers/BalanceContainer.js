@@ -22,7 +22,7 @@ const BalanceContainer = () => {
     })
 
     const addressList = [
-        // '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
+        '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
         // '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
         '0xAa214bF592687A451A0753F805aa0fe931Ba6968'
     ]
