@@ -67,7 +67,6 @@ const BalancesChart = ({ balances, prices }) => {
                                     for (let k = 0; k < currentPrices.length; k++) {
                                         if (currentPrices[k].result.tokenSymbol == token.token) {
                                             return token.balance * 10 ** -tokens[j].decimals * Number(currentPrices[k].result.price)
-
                                         }
                                     }
                                 }
@@ -88,13 +87,11 @@ const BalancesChart = ({ balances, prices }) => {
         datasets: makeDatasets(retrievedBalances)
     }
 
-    // console.log(data)
-
     const options = {
         plugins: {
             title: {
                 display: true,
-                text: 'Chart.js Bar Chart - Stacked'
+                text: 'ZZ token balances'
             },
         },
         responsive: true,
@@ -106,13 +103,16 @@ const BalancesChart = ({ balances, prices }) => {
                 stacked: true,
             },
             y: {
-                stacked: true
-            }
+                title: {
+                    display: true,
+                    text: '$'
+                }
+            },
+
         }
     }
 
     return (<>
-        <h4>I are Chart</h4>
         <Bar options={options} data={data} />
     </>)
 }

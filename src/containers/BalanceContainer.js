@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Bottleneck from "bottleneck";
-// import BalancesTable from '../components/BalancesTable';
 import BalancesChart from '../components/BalancesChart';
-
 
 const BalanceContainer = () => {
 
@@ -112,21 +110,15 @@ const BalanceContainer = () => {
     }
 
     const getAllBalances = async function (list) {
-
         const promiseArray = list.map(n => {
             return getAddressBalance(n)
         })
 
         const allBalances = await promiseAll(promiseArray)
-
-        // console.log('getAllBalances returning: ', allBalances)
-
         return { allBalances }
-
     }
 
     const getAddressBalance = async function (address) {
-
         let addressBalancePromiseArray = []
 
         addressBalancePromiseArray.push(getZkSyncBalance(address))
@@ -196,7 +188,6 @@ const BalanceContainer = () => {
     }
 
     const getMainnetBalance = async function (address) {
-
         let mainnetPromiseArray = []
         mainnetPromiseArray.push(getMainnetEthBalance(address))
 
@@ -246,12 +237,8 @@ const BalanceContainer = () => {
         return ({ addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length })
     }
 
-
-
     return (<>
-        {/* {balances ? <BalancesTable balances={balances}></BalancesTable>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>} */}
         {balances ? <BalancesChart balances={balances} prices={prices}></BalancesChart> : <><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
-
     </>)
 }
 
