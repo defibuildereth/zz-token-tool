@@ -47,28 +47,27 @@ const BalancesChart = ({ balances }) => {
         return item.token
     });
 
-
-
     const makeDatasets = function (obj) {
         let keys = Object.keys(obj)
         let addressObject = (obj[keys[0]])
-        // console.log(addressObject)
         let dataArray = []
         addressObject.map(item => {
             let address = Object.keys(item)[0]
-            // console.log(address)
-        //     let index = addressObject.indexOf(item)
             let networks = Object.values(item)[0]
-            // console.log(networks)
             networks.map((n) => {
-                // console.log(n)
                 let network = Object.keys(n)[0]
-                // console.log(network)
                 let tokenBalances = Object.values(n)[0]
-                dataArray.push({ label: address.slice(0, 5) + ' ' + network, data: tokenBalances.map(token => { return token.balance }), backgroundColor: `#${address.slice(4, 7)}`, stack: network })
+                let datas = tokenBalances.map(token => {
+                    for (let i = 0; i < tokens.length; i++) {
+                        if (tokens[i].token === token.token) {
+                            return token.balance
+                        }
+                    }
+                })
+                dataArray.push({ label: address.slice(0, 5) + ' ' + network, data: datas, backgroundColor: `#${address.slice(4, 7)}`, stack: network })
             })
         })
-        console.log(dataArray)
+        // console.log(dataArray)
         return dataArray
 
     }
