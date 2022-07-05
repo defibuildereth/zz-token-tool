@@ -49,6 +49,7 @@ const BalanceContainer = () => {
 
     const [balances, setBalances] = useState("")
     const [loading, setLoading] = useState("")
+    const [prices, setPrices] = useState([])
 
     useEffect(() => {
         getAllBalances(addressList)
@@ -59,32 +60,23 @@ const BalanceContainer = () => {
             .then((r) => {
                 setLoading(r)
             })
+        getTokenPrices(tokens)
+            .then((r) => {
+                console.log(r)
+                setPrices(r)
+            })
     }, [])
 
-    // const parseBalances = function (obj) {
-    //     let keys = Object.keys(obj)
-    //     let addressItem = (obj[keys[0]][0])
-    //     let address = Object.keys(addressItem)
-    //     // console.log(address[0])
-    //     let item = (addressItem[address[0]])
-    //     for (let i = 0; i < item.length; i++) {
-    //         let network = Object.keys(item[i])
-    //         let balances = Object.values(item[i])
-    //         // console.log(network[0])
-    //         for (let i = 0; i < balances.length; i++) {
-    //             let balanceItems = balances[i]
-    //             // console.log(balanceItems)
-    //             for (let j = 0; j < balanceItems.length; j++) {
-    //                 let balanceItem = balanceItems[j]
-    //                 let balanceItemToken = Object.keys(balanceItem)
-    //                 let balanceItemBalance = Object.values(balanceItem)
-    //                 for (let k = 0; k < balanceItemToken.length; k++) {
-    //                     // console.log(balanceItemToken[k], balanceItemBalance[k])
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
+    const getTokenPrices = async function (list) {
+        const promiseArray = list.map(item => {
+            let url = `https://api.zksync.io/api/v0.2/tokens/${item.token}/priceIn/usd`
+            return apiCall(url)
+        })
+
+        let prices = await promiseAll(promiseArray)
+        // console.log(prices.result.price, prices.result.tokenSymbol)
+        return prices
+    }
 
     async function scheduleEtherscan(url) {
         return etherscanAPI.schedule(() => {
@@ -166,13 +158,13 @@ const BalanceContainer = () => {
     const getPolygonMaticBalance = async function (address) {
         const url = `https://api.polygonscan.com/api?module=account&action=balance&address=${address}&apikey=${process.env.REACT_APP_POLYGONSCAN}`
         const response = await schedulePolygonscan(url)
-        return ({token: 'MATIC', balance: response.result})
+        return ({ token: 'MATIC', balance: response.result })
     }
 
     const getPolygonERC20Balance = async function (address, tokenContract, token) {
         const url = `https://api.polygonscan.com/api?module=account&action=tokenbalance&contractaddress=${tokenContract}&address=${address}&tag=latest&apikey=${process.env.REACT_APP_POLYGONSCAN}`
         const response = await schedulePolygonscan(url)
-        return ({token: token, balance: response.result})
+        return ({ token: token, balance: response.result })
     }
 
     const getArbitrumBalance = async function (address) {
@@ -251,14 +243,14 @@ const BalanceContainer = () => {
     }
 
     const getLoading = async function (addressList, tokens) {
-        return ({addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length})
+        return ({ addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length })
     }
 
 
 
     return (<>
         {/* {balances ? <BalancesTable balances={balances}></BalancesTable>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>} */}
-        {balances ? <BalancesChart balances={balances}></BalancesChart>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
+        {balances ? <BalancesChart balances={balances} prices={prices}></BalancesChart> : <><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
 
     </>)
 }

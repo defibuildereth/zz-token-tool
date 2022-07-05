@@ -11,8 +11,9 @@ import {
     Legend,
 } from 'chart.js';
 
-const BalancesChart = ({ balances }) => {
+const BalancesChart = ({ balances, prices }) => {
     let retrievedBalances = balances
+    let currentPrices = prices
 
     const tokens = [
         { "token": "ETH", "address": "0x0000000000000000000000000000000000000000", "decimals": 18 },
@@ -58,29 +59,22 @@ const BalancesChart = ({ balances }) => {
                 let network = Object.keys(n)[0]
                 let tokenBalances = Object.values(n)[0]
                 let datas = labels.map(label => {
-                    for (let i = 0; i <tokenBalances.length; i++) {
+                    for (let i = 0; i < tokenBalances.length; i++) {
                         if (label == tokenBalances[i].token) {
                             let token = tokenBalances[i]
                             for (let j = 0; j < tokens.length; j++) {
                                 if (tokens[j].token == token.token) {
-                                    return token.balance * 10 ** -tokens[j].decimals
+                                    for (let k = 0; k < currentPrices.length; k++) {
+                                        if (currentPrices[k].result.tokenSymbol == token.token) {
+                                            return token.balance * 10 ** -tokens[j].decimals * Number(currentPrices[k].result.price)
+
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 })
-                // let datas = tokenBalances.map(token => {
-                //     for (let i = 0; i < labels.length; i++) {
-                //         if (labels[i] === token.token) {
-                //             for (let j = 0; j <tokens.length; j++) {
-                //                 if (tokens[j].token == token.token) {
-                //                     return token.balance * 10 ** -tokens[j].decimals
-
-                //                 }
-                //             }
-                //         }
-                //     }
-                // })
                 dataArray.push({ label: address.slice(0, 5) + ' ' + network, data: datas, backgroundColor: `#${address.slice(4, 7)}`, stack: network })
             })
         })
