@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Bottleneck from "bottleneck";
-import BalancesTable from '../components/BalancesTable';
+// import BalancesTable from '../components/BalancesTable';
+import BalancesChart from '../components/BalancesChart';
 
 
 const BalanceContainer = () => {
@@ -256,7 +257,9 @@ const BalanceContainer = () => {
 
 
     return (<>
-        {balances ? <BalancesTable balances={balances}></BalancesTable>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
+        {/* {balances ? <BalancesTable balances={balances}></BalancesTable>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>} */}
+        {balances ? <BalancesChart balances={balances}></BalancesChart>:<><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
+
     </>)
 }
 
