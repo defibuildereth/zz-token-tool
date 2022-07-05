@@ -57,13 +57,30 @@ const BalancesChart = ({ balances }) => {
             networks.map((n) => {
                 let network = Object.keys(n)[0]
                 let tokenBalances = Object.values(n)[0]
-                let datas = tokenBalances.map(token => {
-                    for (let i = 0; i < tokens.length; i++) {
-                        if (tokens[i].token === token.token) {
-                            return token.balance
+                let datas = labels.map(label => {
+                    for (let i = 0; i <tokenBalances.length; i++) {
+                        if (label == tokenBalances[i].token) {
+                            let token = tokenBalances[i]
+                            for (let j = 0; j < tokens.length; j++) {
+                                if (tokens[j].token == token.token) {
+                                    return token.balance * 10 ** -tokens[j].decimals
+                                }
+                            }
                         }
                     }
                 })
+                // let datas = tokenBalances.map(token => {
+                //     for (let i = 0; i < labels.length; i++) {
+                //         if (labels[i] === token.token) {
+                //             for (let j = 0; j <tokens.length; j++) {
+                //                 if (tokens[j].token == token.token) {
+                //                     return token.balance * 10 ** -tokens[j].decimals
+
+                //                 }
+                //             }
+                //         }
+                //     }
+                // })
                 dataArray.push({ label: address.slice(0, 5) + ' ' + network, data: datas, backgroundColor: `#${address.slice(4, 7)}`, stack: network })
             })
         })
