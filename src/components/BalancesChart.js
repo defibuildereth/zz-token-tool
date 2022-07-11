@@ -15,6 +15,8 @@ const BalancesChart = ({ balances, prices }) => {
     let retrievedBalances = balances
     let currentPrices = prices
 
+    console.log(retrievedBalances, currentPrices)
+
     const tokens = [
         { "token": "ETH", "address": "0x0000000000000000000000000000000000000000", "decimals": 18 },
         { "token": "APE", "address": "0x4d224452801aced8b2f0aebe155379bb5d594381", "decimals": 18 },

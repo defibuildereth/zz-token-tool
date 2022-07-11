@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Bottleneck from "bottleneck";
 import BalancesChart from '../components/BalancesChart';
+import AddressInput from '../components/AddressInput';
 
 const BalanceContainer = () => {
 
@@ -18,12 +19,6 @@ const BalanceContainer = () => {
         maxConcurrent: 1,
         minTime: 400
     })
-
-    const addressList = [
-        '0x4ade2c97eae796bb232026dd1cc1cf98130dbac6',
-        // '0x5aa45fa1d7b807f22c677a920afd1e96baf92720',
-        '0xAa214bF592687A451A0753F805aa0fe931Ba6968'
-    ]
 
     const tokens = [
         { "token": "ETH", "address": "0x0000000000000000000000000000000000000000", "decimals": 18 },
@@ -46,21 +41,11 @@ const BalanceContainer = () => {
     ]
 
     const [balances, setBalances] = useState("")
-    const [loading, setLoading] = useState("")
     const [prices, setPrices] = useState([])
 
     useEffect(() => {
-        getAllBalances(addressList)
-            .then((r) => {
-                setBalances(r)
-            })
-        getLoading(addressList, tokens)
-            .then((r) => {
-                setLoading(r)
-            })
         getTokenPrices(tokens)
             .then((r) => {
-                console.log(r)
                 setPrices(r)
             })
     }, [])
@@ -72,7 +57,6 @@ const BalanceContainer = () => {
         })
 
         let prices = await promiseAll(promiseArray)
-        // console.log(prices.result.price, prices.result.tokenSymbol)
         return prices
     }
 
@@ -233,12 +217,17 @@ const BalanceContainer = () => {
         return ({ zkSync: zkSyncBalance })
     }
 
-    const getLoading = async function (addressList, tokens) {
-        return ({ addresses: addressList.length, tokens: tokens.length, total: addressList.length * tokens.length })
+    const onFormSubmit = (formInfo) => {
+        let addresses = Object.values(formInfo)
+        const filtered = addresses.filter(n => n)
+        getAllBalances(filtered)
+            .then((r) => {
+                setBalances(r)
+            })
     }
 
     return (<>
-        {balances ? <BalancesChart balances={balances} prices={prices}></BalancesChart> : <><p>There are {loading.addresses} addresses and {loading.tokens} relevant tokens, meaning {loading.total} Etherscan API calls (less for Arbiscan and PolygonScan).</p><p> At 4 calls/second, that means a loading time of {loading.total / 4}s.</p></>}
+        {balances ? <BalancesChart balances={balances} prices={prices}></BalancesChart> : <AddressInput onFormSubmit={onFormSubmit} tokens={tokens}></AddressInput>}
     </>)
 }
 
