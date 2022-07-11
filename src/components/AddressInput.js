@@ -26,7 +26,7 @@ const AddressInput = ({ onFormSubmit, tokens }) => {
     return (
         <>
             <form className='addressInput' onSubmit={handleSubmit(onSubmit)}>
-                <input className='address' id="add1" size="50" placeholder="Address" {...register("address1", {
+                <input className='address' id="add1"  size='50' placeholder="Address" {...register("address1", {
                     required: true, pattern: {
                         value: /^0x[a-fA-F0-9]{40}$/,
                         message: "invalid eth address"
@@ -37,7 +37,7 @@ const AddressInput = ({ onFormSubmit, tokens }) => {
                         Invalid Address
                     </span>
                 )}
-                <input className='address' id="add2" size="50" placeholder="Address2" {...register("address2", {
+                <input className='address' id="add2" size='50' placeholder="Address2" {...register("address2", {
                     required: false, pattern: {
                         value: /^0x[a-fA-F0-9]{40}$/,
                         message: "invalid eth address"
@@ -48,7 +48,7 @@ const AddressInput = ({ onFormSubmit, tokens }) => {
                         Invalid Address
                     </span>
                 )}
-                <input className='address' id="add3" size="50" placeholder="Address3" {...register("address3", {
+                <input className='address' id="add3"  size='50' placeholder="Address3" {...register("address3", {
                     required: false, pattern: {
                         value: /^0x[a-fA-F0-9]{40}$/,
                         message: "invalid eth address"
